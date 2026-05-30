@@ -59,7 +59,7 @@ With OpenRouter:
 
 ```bash
 modal secret create openrouter-api-key OPENROUTER_API_KEY=your_key_here
-OPENROUTER_MODAL_SECRET=openrouter-api-key modal deploy backend/modal_app.py
+modal deploy backend/modal_app.py
 ```
 
 Use the Modal endpoint URL as `VITE_API_BASE_URL` for Vercel.

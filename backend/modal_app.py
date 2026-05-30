@@ -5,19 +5,17 @@ Deploy from the repository root:
 
 If you have an OpenRouter key, create a Modal secret first and deploy with:
     modal secret create openrouter-api-key OPENROUTER_API_KEY=...
-    OPENROUTER_MODAL_SECRET=openrouter-api-key modal deploy backend/modal_app.py
+    modal deploy backend/modal_app.py
 """
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
 import modal
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SECRET_NAME = os.environ.get("OPENROUTER_MODAL_SECRET", "")
 
 image = (
     modal.Image.debian_slim(python_version="3.11")
@@ -27,10 +25,10 @@ image = (
 )
 
 app = modal.App("worldview-embedding-space")
-secrets = [modal.Secret.from_name(SECRET_NAME)] if SECRET_NAME else []
+openrouter_secret = modal.Secret.from_name("openrouter-api-key")
 
 
-@app.function(image=image, secrets=secrets, timeout=240)
+@app.function(image=image, secrets=[openrouter_secret], timeout=240)
 @modal.asgi_app()
 def fastapi_app():
     import os
