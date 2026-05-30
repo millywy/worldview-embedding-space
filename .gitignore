@@ -8,3 +8,4 @@ __pycache__/
 .venv/
 .modal/
 data/api.py
+.vercel
