@@ -314,7 +314,7 @@ function WorldviewScene({
   const centroidGroupRef = useRef(null);
   const userGroupRef = useRef(null);
   const pointObjectsRef = useRef([]);
-  const focusTargetRef = useRef(null);
+  const focusAnimationRef = useRef(null);
   const projectorRef = useRef(createProjector([]));
   const onHoverRef = useRef(onHover);
   const onSelectRef = useRef(onSelect);
@@ -353,6 +353,17 @@ function WorldviewScene({
     controls.maxDistance = 28;
     controls.target.set(0, 0, 0);
     controlsRef.current = controls;
+
+    function animateFocus(target, cameraOffset = new THREE.Vector3(5.3, 3.1, 6.7)) {
+      focusAnimationRef.current = {
+        target: target.clone(),
+        cameraPosition: target.clone().add(cameraOffset),
+      };
+    }
+
+    function cancelFocus() {
+      focusAnimationRef.current = null;
+    }
 
     const ambient = new THREE.AmbientLight("#8aa4c8", 0.85);
     scene.add(ambient);
@@ -426,7 +437,7 @@ function WorldviewScene({
       const [hit] = raycaster.intersectObjects(visibleObjects, false);
       if (hit) {
         onSelectRef.current(hit.object.userData.point);
-        focusTargetRef.current = hit.object.position.clone();
+        animateFocus(hit.object.position);
       }
     }
 
@@ -439,6 +450,7 @@ function WorldviewScene({
 
     renderer.domElement.addEventListener("pointermove", handlePointerMove);
     renderer.domElement.addEventListener("click", handleClick);
+    controls.addEventListener("start", cancelFocus);
     window.addEventListener("resize", handleResize);
 
     let animationId = 0;
@@ -465,10 +477,18 @@ function WorldviewScene({
         });
       }
 
-      if (focusTargetRef.current) {
-        controls.target.lerp(focusTargetRef.current, 0.045);
-        const desired = focusTargetRef.current.clone().add(new THREE.Vector3(5.3, 3.1, 6.7));
-        camera.position.lerp(desired, 0.03);
+      if (focusAnimationRef.current) {
+        const { target, cameraPosition } = focusAnimationRef.current;
+        controls.target.lerp(target, 0.075);
+        camera.position.lerp(cameraPosition, 0.055);
+        if (
+          controls.target.distanceTo(target) < 0.025 &&
+          camera.position.distanceTo(cameraPosition) < 0.04
+        ) {
+          controls.target.copy(target);
+          camera.position.copy(cameraPosition);
+          focusAnimationRef.current = null;
+        }
       }
 
       controls.update();
@@ -481,6 +501,7 @@ function WorldviewScene({
       cancelAnimationFrame(animationId);
       renderer.domElement.removeEventListener("pointermove", handlePointerMove);
       renderer.domElement.removeEventListener("click", handleClick);
+      controls.removeEventListener("start", cancelFocus);
       window.removeEventListener("resize", handleResize);
       controls.dispose();
       renderer.dispose();
@@ -550,12 +571,18 @@ function WorldviewScene({
     if (!selectedPoint) return;
     const object = pointObjectsRef.current.find((mesh) => mesh.userData.point === selectedPoint);
     if (object) {
-      focusTargetRef.current = object.position.clone();
+      focusAnimationRef.current = {
+        target: object.position.clone(),
+        cameraPosition: object.position.clone().add(new THREE.Vector3(5.3, 3.1, 6.7)),
+      };
     }
   }, [selectedPoint]);
 
   useEffect(() => {
-    focusTargetRef.current = new THREE.Vector3(0, 0, 0);
+    focusAnimationRef.current = {
+      target: new THREE.Vector3(0, 0, 0),
+      cameraPosition: new THREE.Vector3(7.8, 5.3, 12.2),
+    };
   }, [focusResetVersion]);
 
   useEffect(() => {
@@ -609,7 +636,10 @@ function WorldviewScene({
 
     scene.add(group);
     userGroupRef.current = group;
-    focusTargetRef.current = target.clone();
+    focusAnimationRef.current = {
+      target: target.clone(),
+      cameraPosition: target.clone().add(new THREE.Vector3(5.3, 3.1, 6.7)),
+    };
   }, [userResult]);
 
   return <div className="scene-canvas" ref={mountRef} />;
@@ -796,7 +826,7 @@ export default function App() {
 
         <button className="icon-action" onClick={resetCamera} type="button">
           <LocateFixed size={16} />
-          Refocus
+          Recenter
         </button>
       </section>
 
