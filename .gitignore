@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.DS_Store
+.env
+.env.local
+__pycache__/
+*.pyc
+.venv/
+.modal/
+data/api.py
