@@ -4,7 +4,7 @@ Interactive 3D visualization that places political writing into a worldview embe
 
 The current dataset is a v1 seed corpus:
 
-- 263 article points across Fox News, Breitbart, NYT, The Guardian, NBC News, Washington Post, and NPR
+- 284 article points across Fox News, Breitbart, NYT, The Guardian, NBC News, Washington Post, and NPR
 - `all-MiniLM-L6-v2` 384-dimensional embeddings
 - fitted UMAP model for projecting new text into the same 3D space
 - outlet centroids and raw article metadata
