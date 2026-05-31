@@ -1,0 +1,298 @@
+[
+  {
+    "id": 0,
+    "count": 39,
+    "top_terms": [
+      "ebola",
+      "health",
+      "people",
+      "prison",
+      "americans",
+      "care",
+      "time",
+      "need",
+      "outbreak",
+      "industry",
+      "good",
+      "america"
+    ],
+    "headlines": [
+      "Why America is failing its health report card | Robert B Shpiner",
+      "A court in Kenya blocks U.S. plan to keep American Ebola patients in Africa",
+      "Americans who get Ebola will go to Europe for treatment, not U.S., officials say",
+      "Medicare Fraud, Kickbacks Rampant at 340B Hospitals",
+      "W.H.O. Boss Tedros Heads to Congo as Ebola Cases Surge",
+      "9 U.S. Voters Tell Us How They’re Coping With Higher Prices"
+    ],
+    "label": "Health and Public Welfare",
+    "editorial": {
+      "x": 2.2997775077819824,
+      "y": -0.9120773077011108,
+      "z": 3.138660192489624
+    },
+    "worldview": {
+      "x": 7.026688098907471,
+      "y": 12.174592018127441,
+      "z": 3.40838885307312
+    }
+  },
+  {
+    "id": 1,
+    "count": 41,
+    "top_terms": [
+      "pope",
+      "leo",
+      "men",
+      "marlow",
+      "pratt",
+      "pope leo",
+      "trump",
+      "like",
+      "ai",
+      "alex marlow",
+      "alex",
+      "just"
+    ],
+    "headlines": [
+      "The celeb endorsements boosting Spencer Pratt's chances of becoming the next LA mayor",
+      "Rosie O’Donnell Promotes Sick Trump Death Wish",
+      "How did Jennifer Siebel Newsom become a target for conservative criticism?",
+      "Obama’s former speechwriter Ben Rhodes examines the US through its 15 most defining speeches",
+      "Is America a Christian nation? A conversation with Bishop Barron.",
+      "A progressive pope takes aim at AI and risks killing its miracles"
+    ],
+    "label": "Culture, Religion and Media",
+    "editorial": {
+      "x": -1.4719233512878418,
+      "y": 0.03183169662952423,
+      "z": 2.5643458366394043
+    },
+    "worldview": {
+      "x": 6.73382043838501,
+      "y": 12.854958534240723,
+      "z": 7.495582580566406
+    }
+  },
+  {
+    "id": 2,
+    "count": 20,
+    "top_terms": [
+      "cup",
+      "dart",
+      "event",
+      "team",
+      "sports",
+      "world cup",
+      "world",
+      "trump",
+      "jaxson",
+      "athletes",
+      "giants",
+      "ufc"
+    ],
+    "headlines": [
+      "BROADCAST BIAS: ‘The View’ whines about Giant scandal of NFL player introducing Trump",
+      "Could the unlikely savior of US college sports be … Donald Trump?",
+      "NFL Players More Upset over Jaxson Dart's Support of Donald Trump than Josh Jacobs' Alleged Domestic Violence Incident",
+      "Abdul Carter on Jaxson Dart: 'If He Chooses to Align with Trump, It’s My Responsibility to Show the World that I Stand Against It'",
+      "Artists bail on D.C. bash for America’s 250th birthday after being listed on the lineup",
+      "As a lifetime NAACP member, it is ‘Out of Bounds’ for playing politics with football"
+    ],
+    "label": "Sports and Politics",
+    "editorial": {
+      "x": -0.044969938695430756,
+      "y": -0.39707380533218384,
+      "z": 5.92827033996582
+    },
+    "worldview": {
+      "x": 7.167998313903809,
+      "y": 12.075322151184082,
+      "z": 5.68294620513916
+    }
+  },
+  {
+    "id": 3,
+    "count": 35,
+    "top_terms": [
+      "judge",
+      "kennedy",
+      "trump",
+      "center",
+      "kennedy center",
+      "federal",
+      "bondi",
+      "fund",
+      "department",
+      "epstein",
+      "ruling",
+      "president"
+    ],
+    "headlines": [
+      "Judge temporarily blocks Trump DOJ's nearly $2B 'anti-weaponization' fund",
+      "Judge halts Trump ‘anti-weaponization’ fund after Jan. 6 prosecutor sues",
+      "Week in Politics: Bondi testifies in Epstein case; DOJ's inquiry into E. Jean Carroll",
+      "Judge Blocks Kennedy Center from Closing for Repairs, Orders Trump Name Removed From Venue",
+      "GREGG JARRETT: Release the Biden tapes and let Americans hear the truth for themselves",
+      "Why are journalists being subjected to search warrants in the US? | Caitlin Vogus"
+    ],
+    "label": "Courts and Accountability",
+    "editorial": {
+      "x": 3.7114179134368896,
+      "y": -4.6686882972717285,
+      "z": 0.6017885208129883
+    },
+    "worldview": {
+      "x": 6.628308296203613,
+      "y": 10.563133239746094,
+      "z": 5.7845940589904785
+    }
+  },
+  {
+    "id": 4,
+    "count": 38,
+    "top_terms": [
+      "iran",
+      "war",
+      "trump",
+      "deal",
+      "military",
+      "regime",
+      "israel",
+      "hegseth",
+      "nuclear",
+      "strait",
+      "russia",
+      "donald"
+    ],
+    "headlines": [
+      "Dem Rep. Walkinshaw: Iran Won't Agree to Dismantle Nuke Program, Deal to Open Strait, Talk About Nukes Is 'Best-Case Scenario'",
+      "White House Official After Situation Room Meeting: Trump Will Only Make Iran Deal that 'Satisfies His Redlines'",
+      "Booker: Iran's Leader Had Fatwa Against Nukes Until Trump Blew Things Up, They Still Have Enriched Uranium",
+      "Trump to make ‘final determination’ on nuclear deal with Iranian regime",
+      "Trump: the boy who cried ‘peace’ in the Middle East | Politics Weekly America",
+      "Can Trump's negotiation playbook solve the Iran war? – video"
+    ],
+    "label": "Foreign Policy and Conflict",
+    "editorial": {
+      "x": -0.15021082758903503,
+      "y": 3.7866861820220947,
+      "z": -1.0552077293395996
+    },
+    "worldview": {
+      "x": 8.573248863220215,
+      "y": 11.33606243133545,
+      "z": 6.3056535720825195
+    }
+  },
+  {
+    "id": 5,
+    "count": 40,
+    "top_terms": [
+      "ice",
+      "illegal",
+      "new jersey",
+      "jersey",
+      "immigration",
+      "detention",
+      "new",
+      "police",
+      "agents",
+      "enforcement",
+      "delaney hall",
+      "delaney"
+    ],
+    "headlines": [
+      "ICE Protesters in New Jersey Threaten 'Death' To Federal Officers and Their Families",
+      "DAVID MARCUS: Democrats own the chaos and racism at New Jersey anti-ICE riots",
+      "FBI arrests protester who threatened to kill ICE officer's family at NJ detention center protest, Blanche says",
+      "Man charged with assaulting federal officers after allegedly biting ICE agents at Newark anti-ICE protest",
+      "Obama judge uses ‘vindictive’ ruling to release alleged MS-13 human trafficker",
+      "New Jersey agitators bite, kick and punch ICE agents as Delaney Hall clashes continue; 9 more arrested: DHS"
+    ],
+    "label": "Immigration and Enforcement",
+    "editorial": {
+      "x": 5.0460944175720215,
+      "y": -1.71648371219635,
+      "z": 1.3247897624969482
+    },
+    "worldview": {
+      "x": 6.546624660491943,
+      "y": 10.366207122802734,
+      "z": 4.433904647827148
+    }
+  },
+  {
+    "id": 6,
+    "count": 35,
+    "top_terms": [
+      "paxton",
+      "senate",
+      "state",
+      "texas",
+      "talarico",
+      "primary",
+      "party",
+      "republican",
+      "cornyn",
+      "democratic",
+      "election",
+      "louisiana"
+    ],
+    "headlines": [
+      "Democrats have fresh hope to win back Senate – could they really pull it off?",
+      "Dan Sullivan vs. Dan Sullivan: GOP blasts clone candidate as lookalike enters Alaska Senate race",
+      "Texas State Democratic Rep. James Talarico on race to flip Senate seat",
+      "DAVID MARCUS: For the love of God, will John Thune finally listen to angry GOP voters",
+      "The latest redistricting move: From the Politics Desk",
+      "MORNING GLORY: Republicans, stop fighting each other. We can't let Democrats seize the Senate"
+    ],
+    "label": "Elections and Party Politics",
+    "editorial": {
+      "x": -2.1277456283569336,
+      "y": -3.197967767715454,
+      "z": 3.7500293254852295
+    },
+    "worldview": {
+      "x": 5.977872371673584,
+      "y": 11.997248649597168,
+      "z": 6.771656036376953
+    }
+  },
+  {
+    "id": 7,
+    "count": 36,
+    "top_terms": [
+      "trump",
+      "president",
+      "donald",
+      "donald trump",
+      "health",
+      "fund",
+      "midterms",
+      "party",
+      "news",
+      "republicans",
+      "white house",
+      "biden"
+    ],
+    "headlines": [
+      "JONATHAN TURLEY: Rep Goldman is trying to rage bait his way to victory. Can he?",
+      "Inflation won Trump the presidency, but could cost him the midterms",
+      "Trump’s corruption leaves us cynical – and complacent | Judith Levine",
+      "Trump self-deals, lies and seems to fall asleep in meetings. The media treats it all as ‘priced in’ | Margaret Sullivan",
+      "Trump doesn’t care about the midterms? Why that misses the mark",
+      "Breitbart Business Digest: Stacking Those $250 Trump Bills"
+    ],
+    "label": "Trump and Governance",
+    "editorial": {
+      "x": -0.7188076376914978,
+      "y": -0.2962409555912018,
+      "z": 3.3040692806243896
+    },
+    "worldview": {
+      "x": 6.847870349884033,
+      "y": 12.345126152038574,
+      "z": 6.405481338500977
+    }
+  }
+]

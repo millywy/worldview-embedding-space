@@ -1,10 +1,12 @@
 import Activity from "lucide-react/dist/esm/icons/activity.mjs";
 import ExternalLink from "lucide-react/dist/esm/icons/external-link.mjs";
+import Layers3 from "lucide-react/dist/esm/icons/layers-3.mjs";
 import Loader2 from "lucide-react/dist/esm/icons/loader-2.mjs";
 import LocateFixed from "lucide-react/dist/esm/icons/locate-fixed.mjs";
 import Radio from "lucide-react/dist/esm/icons/radio.mjs";
 import Send from "lucide-react/dist/esm/icons/send.mjs";
 import Sparkles from "lucide-react/dist/esm/icons/sparkles.mjs";
+import Tags from "lucide-react/dist/esm/icons/tags.mjs";
 import Target from "lucide-react/dist/esm/icons/target.mjs";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
@@ -273,32 +275,93 @@ function buildFallbackResult(text, points, centroids) {
 }
 
 function normalizeEmbedResult(data, text, points, centroids) {
-  const coords = {
-    x: Number(data.x ?? data.coords?.x ?? 0),
-    y: Number(data.y ?? data.coords?.y ?? 0),
-    z: Number(data.z ?? data.coords?.z ?? 0),
-  };
-  const similarities = data.similarities || normalizedSimilarities(coords, centroids);
-  const sorted = Object.entries(similarities).sort((a, b) => b[1] - a[1]);
+  function normalizeView(view = data) {
+    const coords = {
+      x: Number(view.x ?? view.coords?.x ?? data.x ?? 0),
+      y: Number(view.y ?? view.coords?.y ?? data.y ?? 0),
+      z: Number(view.z ?? view.coords?.z ?? data.z ?? 0),
+    };
+    return {
+      ...coords,
+      similarities: view.similarities || data.similarities || normalizedSimilarities(coords, centroids),
+      nearest: view.nearest?.length ? view.nearest : data.nearest || nearestByCoordinate(coords, points),
+      projection: view.projection || data.projection || "",
+    };
+  }
+
+  const worldview = normalizeView(data.views?.worldview || data);
+  const editorial = normalizeView(data.views?.editorial || data);
 
   return {
-    ...coords,
-    similarities,
-    nearest: data.nearest?.length ? data.nearest : nearestByCoordinate(coords, points),
+    ...worldview,
+    views: {
+      worldview,
+      editorial,
+    },
+    nearest: data.nearest?.length ? data.nearest : editorial.nearest,
+    framing_nearest: data.framing_nearest?.length ? data.framing_nearest : data.nearest || [],
     distinctive_terms: data.distinctive_terms?.length
       ? data.distinctive_terms
       : extractTerms(text),
-    top_outlet: data.top_outlet || sorted[0]?.[0] || "Unknown",
-    top_score: Number(data.top_score ?? sorted[0]?.[1] ?? 0),
+    topic: data.topic || null,
+    top_outlet: data.top_outlet || "Unknown",
+    top_score: Number(data.top_score ?? 0),
     interpretation: data.interpretation || "",
     mode: data.mode || "modal-backend",
   };
+}
+
+function createTopicLabelSprite(label, count) {
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+  const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+  const title = label.toUpperCase();
+  const subtitle = `${count} ARTICLES`;
+  context.font = `700 ${15 * pixelRatio}px Inter, sans-serif`;
+  const textWidth = Math.max(
+    context.measureText(title).width,
+    context.measureText(subtitle).width,
+  );
+  canvas.width = Math.ceil(textWidth + 30 * pixelRatio);
+  canvas.height = Math.ceil(52 * pixelRatio);
+  context.scale(pixelRatio, pixelRatio);
+  const width = canvas.width / pixelRatio;
+  const height = canvas.height / pixelRatio;
+
+  context.fillStyle = "rgba(5, 11, 17, 0.74)";
+  context.strokeStyle = "rgba(114, 244, 255, 0.42)";
+  context.lineWidth = 1;
+  context.beginPath();
+  context.roundRect(0.5, 0.5, width - 1, height - 1, 6);
+  context.fill();
+  context.stroke();
+
+  context.fillStyle = "#dffbff";
+  context.font = "700 15px Inter, sans-serif";
+  context.fillText(title, 14, 22);
+  context.fillStyle = "rgba(168, 190, 211, 0.9)";
+  context.font = "600 10px Inter, sans-serif";
+  context.fillText(subtitle, 14, 39);
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  const material = new THREE.SpriteMaterial({
+    map: texture,
+    transparent: true,
+    opacity: 0.48,
+    depthWrite: false,
+  });
+  const sprite = new THREE.Sprite(material);
+  sprite.scale.set(Math.max(2.8, width / 52), height / 52, 1);
+  return sprite;
 }
 
 function WorldviewScene({
   points,
   centroids,
   visibleOutlets,
+  topicRegions,
+  showTopicLabels,
   userResult,
   selectedPoint,
   focusResetVersion,
@@ -312,6 +375,7 @@ function WorldviewScene({
   const controlsRef = useRef(null);
   const pointsGroupRef = useRef(null);
   const centroidGroupRef = useRef(null);
+  const topicGroupRef = useRef(null);
   const userGroupRef = useRef(null);
   const pointObjectsRef = useRef([]);
   const focusAnimationRef = useRef(null);
@@ -410,6 +474,10 @@ function WorldviewScene({
     centroidGroupRef.current = centroidGroup;
     scene.add(centroidGroup);
 
+    const topicGroup = new THREE.Group();
+    topicGroupRef.current = topicGroup;
+    scene.add(topicGroup);
+
     const raycaster = new THREE.Raycaster();
     const pointer = new THREE.Vector2();
 
@@ -477,6 +545,11 @@ function WorldviewScene({
         });
       }
 
+      for (const label of topicGroupRef.current?.children || []) {
+        const distance = camera.position.distanceTo(label.position);
+        label.material.opacity = THREE.MathUtils.clamp(0.74 - distance / 40, 0.22, 0.62);
+      }
+
       if (focusAnimationRef.current) {
         const { target, cameraPosition } = focusAnimationRef.current;
         controls.target.lerp(target, 0.075);
@@ -513,12 +586,14 @@ function WorldviewScene({
     const scene = sceneRef.current;
     const pointsGroup = pointsGroupRef.current;
     const centroidGroup = centroidGroupRef.current;
-    if (!scene || !pointsGroup || !centroidGroup || !points.length) return;
+    const topicGroup = topicGroupRef.current;
+    if (!scene || !pointsGroup || !centroidGroup || !topicGroup || !points.length) return;
 
     projectorRef.current = createProjector(points);
 
     pointsGroup.clear();
     centroidGroup.clear();
+    topicGroup.clear();
     pointObjectsRef.current = [];
 
     const sphere = new THREE.SphereGeometry(0.075, 16, 16);
@@ -556,7 +631,16 @@ function WorldviewScene({
       marker.userData.outlet = outlet;
       centroidGroup.add(marker);
     }
-  }, [points, centroids]);
+
+    if (showTopicLabels) {
+      for (const topic of topicRegions) {
+        const label = createTopicLabelSprite(topic.label, topic.count);
+        label.position.copy(projectorRef.current(topic.editorial));
+        label.position.y += 0.44;
+        topicGroup.add(label);
+      }
+    }
+  }, [points, centroids, topicRegions, showTopicLabels]);
 
   useEffect(() => {
     for (const object of pointObjectsRef.current) {
@@ -569,7 +653,9 @@ function WorldviewScene({
 
   useEffect(() => {
     if (!selectedPoint) return;
-    const object = pointObjectsRef.current.find((mesh) => mesh.userData.point === selectedPoint);
+    const object = pointObjectsRef.current.find(
+      (mesh) => mesh.userData.point.url === selectedPoint.url,
+    );
     if (object) {
       focusAnimationRef.current = {
         target: object.position.clone(),
@@ -648,6 +734,11 @@ function WorldviewScene({
 export default function App() {
   const [points, setPoints] = useState([]);
   const [centroids, setCentroids] = useState({});
+  const [worldviewPoints, setWorldviewPoints] = useState([]);
+  const [worldviewCentroids, setWorldviewCentroids] = useState({});
+  const [topics, setTopics] = useState([]);
+  const [viewMode, setViewMode] = useState("worldview");
+  const [showTopicLabels, setShowTopicLabels] = useState(true);
   const [visibleOutlets, setVisibleOutlets] = useState(new Set());
   const [selectedPoint, setSelectedPoint] = useState(null);
   const [hovered, setHovered] = useState(null);
@@ -662,20 +753,47 @@ export default function App() {
     let cancelled = false;
     async function loadData() {
       try {
-        const [pointsResponse, centroidsResponse] = await Promise.all([
+        const [
+          pointsResponse,
+          centroidsResponse,
+          worldviewPointsResponse,
+          worldviewCentroidsResponse,
+          topicsResponse,
+        ] = await Promise.all([
           fetch("/worldview/points.json"),
           fetch("/worldview/centroids.json"),
+          fetch("/worldview/worldview_points.json"),
+          fetch("/worldview/worldview_centroids.json"),
+          fetch("/worldview/topics.json"),
         ]);
-        if (!pointsResponse.ok || !centroidsResponse.ok) {
+        if (
+          !pointsResponse.ok ||
+          !centroidsResponse.ok ||
+          !worldviewPointsResponse.ok ||
+          !worldviewCentroidsResponse.ok ||
+          !topicsResponse.ok
+        ) {
           throw new Error("Could not load worldview data.");
         }
-        const [pointsData, centroidData] = await Promise.all([
+        const [
+          pointsData,
+          centroidData,
+          worldviewPointsData,
+          worldviewCentroidData,
+          topicsData,
+        ] = await Promise.all([
           pointsResponse.json(),
           centroidsResponse.json(),
+          worldviewPointsResponse.json(),
+          worldviewCentroidsResponse.json(),
+          topicsResponse.json(),
         ]);
         if (!cancelled) {
           setPoints(pointsData);
           setCentroids(centroidData);
+          setWorldviewPoints(worldviewPointsData);
+          setWorldviewCentroids(worldviewCentroidData);
+          setTopics(topicsData);
           setVisibleOutlets(new Set([...new Set(pointsData.map((point) => point.outlet))]));
         }
       } catch (error) {
@@ -700,10 +818,17 @@ export default function App() {
       .sort((a, b) => b.count - a.count || a.outlet.localeCompare(b.outlet));
   }, [points]);
 
+  const activePoints = viewMode === "worldview" && worldviewPoints.length ? worldviewPoints : points;
+  const activeCentroids =
+    viewMode === "worldview" && Object.keys(worldviewCentroids).length
+      ? worldviewCentroids
+      : centroids;
+  const activeUserView = userResult?.views?.[viewMode] || userResult;
+
   const topSimilarity = useMemo(() => {
-    if (!userResult?.similarities) return null;
-    return Object.entries(userResult.similarities).sort((a, b) => b[1] - a[1])[0] || null;
-  }, [userResult]);
+    if (!activeUserView?.similarities) return null;
+    return Object.entries(activeUserView.similarities).sort((a, b) => b[1] - a[1])[0] || null;
+  }, [activeUserView]);
 
   function toggleOutlet(outlet) {
     setVisibleOutlets((current) => {
@@ -745,9 +870,7 @@ export default function App() {
         result = buildFallbackResult(trimmed, points, centroids);
       }
       setUserResult(result);
-      if (result.nearest?.[0]) {
-        setSelectedPoint(points.find((point) => point.url === result.nearest[0].url) || null);
-      }
+      setSelectedPoint(null);
     } catch (error) {
       const fallback = buildFallbackResult(trimmed, points, centroids);
       setUserResult({
@@ -762,15 +885,17 @@ export default function App() {
     }
   }
 
-  const visibleCount = points.filter((point) => visibleOutlets.has(point.outlet)).length;
+  const visibleCount = activePoints.filter((point) => visibleOutlets.has(point.outlet)).length;
 
   return (
     <main className="app-shell">
       <WorldviewScene
-        points={points}
-        centroids={centroids}
+        points={activePoints}
+        centroids={activeCentroids}
         visibleOutlets={visibleOutlets}
-        userResult={userResult}
+        topicRegions={topics}
+        showTopicLabels={viewMode === "editorial" && showTopicLabels}
+        userResult={activeUserView}
         selectedPoint={selectedPoint}
         focusResetVersion={focusResetVersion}
         onHover={setHovered}
@@ -797,6 +922,43 @@ export default function App() {
             <span>{visibleCount || "-"}</span>
             <label>Visible</label>
           </div>
+        </div>
+
+        <div className="dock-section">
+          <div className="section-title">
+            <Layers3 size={14} />
+            Lens
+          </div>
+          <div className="segment-control">
+            <button
+              className={viewMode === "worldview" ? "is-active" : ""}
+              onClick={() => setViewMode("worldview")}
+              type="button"
+            >
+              Worldview
+            </button>
+            <button
+              className={viewMode === "editorial" ? "is-active" : ""}
+              onClick={() => setViewMode("editorial")}
+              type="button"
+            >
+              Landscape
+            </button>
+          </div>
+          {viewMode === "editorial" ? (
+            <label className="toggle-row">
+              <span>
+                <Tags size={14} />
+                Topic labels
+              </span>
+              <input
+                checked={showTopicLabels}
+                onChange={(event) => setShowTopicLabels(event.target.checked)}
+                type="checkbox"
+              />
+              <i />
+            </label>
+          ) : null}
         </div>
 
         <div className="dock-section">
@@ -863,15 +1025,22 @@ export default function App() {
               Your point
             </div>
             <div className="top-read">
-              <span>You sound most like</span>
+              <span>
+                {viewMode === "worldview" && userResult.topic
+                  ? `Among writing about ${userResult.topic.label}, your framing is closest to`
+                  : "Closest outlet cluster"}
+              </span>
               <strong style={{ color: outletColor(topSimilarity?.[0]) }}>
                 {topSimilarity?.[0] || userResult.top_outlet}
               </strong>
-              <b>{Number(topSimilarity?.[1] || userResult.top_score).toFixed(1)}%</b>
+              <b>
+                {Number(topSimilarity?.[1] || userResult.top_score).toFixed(1)}%
+                {viewMode === "worldview" ? " topic-conditioned match" : " cluster match"}
+              </b>
             </div>
 
             <div className="similarity-bars">
-              {Object.entries(userResult.similarities)
+              {Object.entries(activeUserView.similarities)
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 5)
                 .map(([outlet, score]) => (
@@ -898,6 +1067,19 @@ export default function App() {
               </div>
             ) : null}
 
+            {userResult.nearest?.[0] ? (
+              <a
+                className="closest-article"
+                href={userResult.nearest[0].url}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <span>Closest individual article</span>
+                <strong>{userResult.nearest[0].outlet}</strong>
+                <em>{userResult.nearest[0].headline}</em>
+              </a>
+            ) : null}
+
             {userResult.interpretation ? (
               <p className="interpretation">{userResult.interpretation}</p>
             ) : null}
@@ -907,13 +1089,17 @@ export default function App() {
         <div className="article-panel">
           <div className="section-title">
             <Target size={14} />
-            {selectedPoint ? "Selected Article" : "Nearest Articles"}
+            {selectedPoint
+              ? "Selected Article"
+              : viewMode === "worldview"
+                ? "Similar Framing"
+                : "Nearest Articles"}
           </div>
           {selectedPoint ? (
             <ArticleDetail point={selectedPoint} />
-          ) : userResult?.nearest?.length ? (
+          ) : activeUserView?.nearest?.length ? (
             <div className="nearest-list">
-              {userResult.nearest.slice(0, 4).map((point) => (
+              {activeUserView.nearest.slice(0, 4).map((point) => (
                 <ArticleRow key={`${point.outlet}-${point.url}`} point={point} />
               ))}
             </div>
@@ -924,16 +1110,24 @@ export default function App() {
       </section>
 
       <div className="bottom-strip">
-        <span>Fox + Breitbart cluster right</span>
-        <span>NYT + Guardian lean left</span>
-        <span>NPR separates by format</span>
-        <span>WaPo sits near the middle</span>
+        {viewMode === "worldview" ? (
+          <>
+            <span>Topic effects reduced</span>
+            <span>Compare framing within subject matter</span>
+          </>
+        ) : (
+          <>
+            <span>Semantic proximity</span>
+            <span>Topic and editorial framing coexist</span>
+          </>
+        )}
       </div>
 
       {hovered ? (
         <div className="tooltip" style={{ left: hovered.x + 14, top: hovered.y + 14 }}>
           <strong style={{ color: outletColor(hovered.point.outlet) }}>{hovered.point.outlet}</strong>
           <span>{hovered.point.headline}</span>
+          {hovered.point.topic_label ? <em>{hovered.point.topic_label}</em> : null}
         </div>
       ) : null}
 

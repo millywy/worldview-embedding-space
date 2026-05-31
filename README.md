@@ -2,14 +2,19 @@
 
 Interactive 3D visualization that places political writing into a worldview embedding space.
 
-The current dataset is a v1 seed corpus:
+The current dataset is an evolving seed corpus:
 
 - 284 article points across Fox News, Breitbart, NYT, The Guardian, NBC News, Washington Post, and NPR
 - `all-MiniLM-L6-v2` 384-dimensional embeddings
 - fitted UMAP model for projecting new text into the same 3D space
 - outlet centroids and raw article metadata
 
-The app is intentionally structured so the corpus can be regenerated later with more articles, then dropped back into `data/` and `public/worldview/`.
+The interface has two lenses:
+
+- `Worldview`: residual framing coordinates after subtracting the detected topic centroid
+- `Landscape`: the original semantic embedding projection, where topic and editorial framing coexist
+
+The app is intentionally structured so the corpus can be regenerated later with more articles.
 
 ## Local Frontend
 
@@ -74,14 +79,42 @@ In Vercel, set `VITE_API_BASE_URL` to the Modal FastAPI URL if you want real sen
 
 ## Regenerating The Corpus Later
 
-To upgrade the dataset, reproduce the same artifact contract:
+After replacing the base corpus artifacts, inspect topic clusters:
+
+```bash
+modal run scripts/generate_worldview_lens.py
+```
+
+Optionally ask OpenRouter for neutral topic-label suggestions:
+
+```bash
+modal run scripts/generate_worldview_lens.py --suggest
+```
+
+Review `TOPIC_LABELS` in `scripts/generate_worldview_lens.py`, then generate the derived worldview artifacts:
+
+```bash
+modal run scripts/generate_worldview_lens.py --generate
+```
+
+The complete artifact contract is:
 
 - `data/points.json`
 - `data/centroids.json`
 - `data/articles.json`
 - `data/embeddings.npy`
 - `data/umap_model.pkl`
+- `data/topics.json`
+- `data/topic_centroids.npy`
+- `data/topic_ids.npy`
+- `data/residual_embeddings.npy`
+- `data/worldview_points.json`
+- `data/worldview_centroids.json`
+- `data/worldview_umap_model.pkl`
 - `public/worldview/points.json`
 - `public/worldview/centroids.json`
+- `public/worldview/topics.json`
+- `public/worldview/worldview_points.json`
+- `public/worldview/worldview_centroids.json`
 
-The frontend only needs `points.json` and `centroids.json`. The backend needs all five data artifacts.
+The public frontend reads the JSON artifacts. The Modal backend uses the complete `data/` set.
